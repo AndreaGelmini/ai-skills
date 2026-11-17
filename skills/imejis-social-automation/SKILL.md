@@ -1,0 +1,17 @@
+---
+name: imejis-social-automation
+description: >-
+  Creates consistent social images with Imejis MCP, checks render quota and estimated cost, and hands off repeatable rendering to a direct API script. Use when asked to design, render, export, batch-generate or automate branded images with Imejis. Do not use for unrelated graphics systems or when no Imejis connection is available.
+---
+
+# Imejis social automation
+
+Read `DESIGN.md` from the project when present. Otherwise ask for or infer minimal brand choices, document assumptions, and use `references/DESIGN.example.md`. Create a fresh dated directory `.imejis/{project-slug}-YYYY-MM-DD/` within the active project. Avoid overwriting an earlier run; append a numeric suffix if needed. Keep final exports, source field maps, and a small manifest together there.
+
+Discover Imejis MCP capabilities rather than assuming tool names. Check the active account plan and current usage or remaining monthly renders **before any rendering**; rendering via MCP and API draws from the same allowance. If quota information is inaccessible, do not claim it has been checked: request approval before consuming credits. On Free, require known remaining quota >= planned renders, including iteration budget; otherwise propose fewer outputs. On paid plans, report the plan's included allowance and estimated incremental cost only if billing/overage information is available; never mistake monthly subscription price for per-image charge. Ask before new paid charges or exceeding remaining allowance. A dry run or layout plan must not call the render endpoint.
+
+Prefer reusing and duplicating appropriate workspace designs; never edit an original without an explicit request. Inspect dimensions and **actual dynamic field names**, pick platform-specific designs for formats, and apply DESIGN.md typography, colors, margin, logos and accessible text. Produce only the requested assets plus at most one optional preview when sufficient quota remains. Check output dimensions, file type, legibility, and expected text. Record template IDs, render fields, quota evidence, assumptions and actual calls in a concise manifest.
+
+When the user asks for repeatable automation, use MCP to inspect render fields and, with explicit permission to create a credential, provision a narrowly named API key. Keep it in `IMEJIS_API_KEY` in the environment, never embed it in code, logs, prompts or the manifest. Run `scripts/render.mjs` with a JSON jobs file produced using `references/jobs.example.json`, replacing sample design ID and field names with verified values. Use `--dry-run` before live requests. The script performs direct synchronous Render API calls using the documented `dma-api-key` header. Never infer design field names. Save files only under the dated project directory and record successes/failures for retry.
+
+Conclude with paths to exports and the manifest, quota consumed when verifiable, and a clear distinction between rendered assets and previews/mockups. If the server or quota cannot be verified, prepare the design brief and scripts without implying Imejis execution succeeded.
