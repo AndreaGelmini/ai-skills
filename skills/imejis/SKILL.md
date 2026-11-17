@@ -1,5 +1,5 @@
 ---
-name: imejis-social-automation
+name: imejis
 description: >-
   Creates consistent social images with Imejis MCP, checks render quota and estimated cost, and hands off repeatable rendering to a direct API script. Use when asked to design, render, export, batch-generate or automate branded images with Imejis. Do not use for unrelated graphics systems or when no Imejis connection is available.
 ---

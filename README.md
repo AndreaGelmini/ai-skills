@@ -7,7 +7,7 @@ A personal collection of focused skills. Each skill can be installed independent
 | [create-skill](skills/create-skill/SKILL.md) | Create and validate short, focused Agent Skills. Includes metadata and Markdown link validators. |
 | [restate-my-goals](skills/restate-my-goals/SKILL.md) | Check understanding of the user's goals and problem before proceeding. |
 | [session-status](skills/session-status/SKILL.md) | Take stock of the whole available session, including context, branches, needs, decisions, and progress. |
-| [imejis-social-automation](skills/imejis-social-automation/SKILL.md) | Create branded social assets through Imejis MCP, verify quota, export safely, and prepare repeatable Render API jobs. |
+| [imejis](skills/imejis/SKILL.md) | Create branded social assets through Imejis MCP, verify quota, export safely, and prepare repeatable Render API jobs. |
 
 
 ## Install selected skills
