@@ -1,0 +1,11 @@
+{
+  "jobs": [
+    {
+      "designId": "REPLACE_WITH_VERIFIED_IMEJIS_DESIGN_ID",
+      "filename": "linkedin.png",
+      "fields": {
+        "REPLACE_WITH_VERIFIED_DYNAMIC_FIELD.text": "A sample title"
+      }
+    }
+  ]
+}
