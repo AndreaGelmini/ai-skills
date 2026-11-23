@@ -1,0 +1,27 @@
+# Glossary
+
+- **Workspace** — local project directory containing one editorial identity, settings, ideas, assets and memory.
+- **Idea** — stable unit of work, from raw input to one or more editorial items; not equivalent to a published post.
+- **Idea Brief** — approved intent, message, trigger, audience, objectives, chosen scope, editorial constraints and delivery decisions. Distinguishes confirmed, inferred, hypothetical and missing information.
+- **Spine** — reusable narrative/editorial guide for organizing the message. Not a draft or a fixed claim/three-point formula.
+- **Sequence** — related editorial items with a main spine, individual angles/derived spines and a cadence; upfront or progressive production.
+- **Rubric** — recurring editorial series, e.g. Idee bislacche, independent of an individual sequence.
+- **Editorial item** — one conceptual post/episode in an idea; may have multiple platform variants.
+- **Platform variant** — one destination-specific content instance, with its own draft, approval, publication and analytics.
+- **Platform** — distribution destination; technical constraints differ from preferences.
+- **Format** — native content shape (standalone post, thread, carousel, article, script).
+- **Hook** — opening attention mechanism; not the message itself.
+- **CTA** — intended reader action, optional when unsuitable.
+- **Artifact** — persistent document or media file with stable ID; versioned when generated or approved.
+- **Dependency** — exact input artifact/version used to create an output.
+- **Stale** — output whose dependency no longer matches the selected current version; retained, not silently overwritten.
+- **Composition spec** — provider-independent description of visual concept, assets, layout and constraints; not a guarantee of editable pixels.
+- **Publish package** — approved destination-ready content, media and posting plan; distinct from publication itself.
+- **Publication receipt** — confirmation with platform/account, time and external ID or URL when available; manual confirmation is valid.
+- **Evidence** — source-linked factual observation/measurement or clearly identified classification.
+- **Provisional learning** — hypothesis or experiment awaiting independent support.
+- **Consolidated learning** — recurrent scoped advisory finding, not causal truth.
+- **Tracker** — interface for locating and recording work; local files are authoritative in MVP.
+- **Index** — rebuildable workspace projection, never sole source of truth.
+- **Status** — current actionable workspace report; not a background job.
+- **Reference** — shared editorial heuristic or verified platform requirement; project preferences may override heuristics.
