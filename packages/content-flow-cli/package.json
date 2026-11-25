@@ -1,11 +1,17 @@
 {
   "name": "@andreagelmini/content-flow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.20.0" },
-  "bin": { "content-flow": "dist/cli.js" },
-  "files": ["dist"],
+  "engines": {
+    "node": ">=22.20.0"
+  },
+  "bin": {
+    "content-flow": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "npm run build && node --test tests/*.test.mjs",
