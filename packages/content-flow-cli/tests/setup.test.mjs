@@ -95,3 +95,35 @@ test('memory defaults are exposed and applied only for enabled memory; explicit 
   assert.equal(approved.profile.visual, null);
   assert.ok(!Object.hasOwn(approved.profile, 'examples'));
 });
+
+test('memory branch is blocked, excluded or open according to its prerequisite', async t => {
+  const root = await fixture(t);
+  const keys = ['memory_support_threshold', 'memory_contrary_threshold'];
+  const initial = await setup(root, 'read');
+  assert.deepEqual(initial.optional_dependencies, Object.fromEntries(keys.map(key => [key, { memory_enabled: true }])));
+  assert.deepEqual(initial.blocked_optional, keys);
+  assert.deepEqual(initial.inapplicable_optional, []);
+  assert.ok(keys.every(key => !initial.unaddressed_optional.includes(key)));
+  const disabled = await setup(root, 'save', { memory_enabled: false });
+  assert.deepEqual(disabled.blocked_optional, []);
+  assert.deepEqual(disabled.inapplicable_optional, keys);
+  assert.ok(keys.every(key => !disabled.unaddressed_optional.includes(key)));
+  const enabled = await setup(root, 'save', { memory_enabled: true });
+  assert.deepEqual(enabled.blocked_optional, []);
+  assert.deepEqual(enabled.inapplicable_optional, []);
+  assert.ok(keys.every(key => enabled.unaddressed_optional.includes(key)));
+});
+
+test('closing and reopening the memory branch preserves confirmed thresholds and active profile', async t => {
+  const root = await fixture(t);
+  await setup(root, 'save', { ...complete, memory_enabled: true, memory_support_threshold: 7 });
+  await setup(root, 'approve');
+  const disabled = await setup(root, 'save', { memory_enabled: false });
+  assert.equal(disabled.profile.memory_enabled, true);
+  assert.equal(disabled.draft.memory_support_threshold, 7);
+  assert.ok(disabled.inapplicable_optional.includes('memory_support_threshold'));
+  const reopened = await setup(root, 'save', { memory_enabled: true });
+  assert.equal(reopened.draft.memory_support_threshold, 7);
+  assert.ok(!reopened.unaddressed_optional.includes('memory_support_threshold'));
+  assert.deepEqual(reopened.inapplicable_optional, []);
+});

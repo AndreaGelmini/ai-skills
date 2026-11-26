@@ -9,6 +9,7 @@ const memoryDefaults = { memory_support_threshold: 5, memory_contrary_threshold:
 const thresholds = ['memory_support_threshold', 'memory_contrary_threshold'] as const;
 const required = [...requiredText, 'platforms', ...flags];
 const optional = [...optionalText, ...thresholds];
+const optionalDependencies = Object.fromEntries(thresholds.map(key => [key, { memory_enabled: true }]));
 type RecordData = Record<string, unknown>;
 const nonempty = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
 function object(value: unknown): value is RecordData {
@@ -50,11 +51,16 @@ function view(settings: RecordData) {
   const profile = (settings.profile ?? null) as RecordData | null;
   const draft = (settings.setup_draft ?? null) as RecordData | null;
   const candidate = draft ?? profile ?? {};
+  const blocked: readonly string[] = candidate.memory_enabled === undefined ? thresholds : [];
+  const inapplicable: readonly string[] = candidate.memory_enabled === false ? thresholds : [];
   return {
     status: 'ok', configuration: settings.configuration,
     profile, draft, required, optional, defaults: memoryDefaults,
     missing: missing(candidate),
-    unaddressed_optional: optional.filter(key => !Object.hasOwn(candidate, key)),
+    optional_dependencies: optionalDependencies,
+    blocked_optional: blocked,
+    inapplicable_optional: inapplicable,
+    unaddressed_optional: optional.filter(key => !Object.hasOwn(candidate, key) && !blocked.includes(key) && !inapplicable.includes(key)),
   };
 }
 

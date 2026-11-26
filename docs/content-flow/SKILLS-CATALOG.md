@@ -19,6 +19,8 @@ Proposed names; one responsibility per skill. All independently callable where u
 | content-patterns | Compare multiple posts and detect patterns | Scoped observations, hypotheses, experiments, uncertainty |
 | content-learnings | Synthesize recommendations and update optional learning memory | Advisory findings; script applies thresholds; no autonomous identity change |
 
+Shared primitive: `interview-loop` is a general-purpose, stateless decision-tree interview skill, outside the 14 Content Flow domain skills. It defaults to one question per turn and activates only by explicit user invocation or delegation from a user-invoked skill. `content-setup` loads it by name when available, otherwise gives a notice and continues with a minimal local interview. `idea-interview` should reuse it when implemented. Domain references and persistence remain the caller's responsibility.
+
 content-status is a deterministic command, not a mandatory skill; content-flow can summarize it. Save/version/resolve/index are shared scripts rather than prompts. Hook/CTA/headline techniques are reference sections, not standalone MVP skills. No separate social provider or renderer skills until actual integration warrants them.
 
 ## Authoring gate

@@ -37,6 +37,7 @@ If npm link is unavailable or fails because the global npm prefix is not writabl
 mkdir -p "$HOME/Projects/content-flow-test"
 cd "$HOME/Projects/content-flow-test"
 npx skills@latest add "$HOME/Projects/ai-skills" --skill content-setup
+npx skills@latest add "$HOME/Projects/ai-skills" --skill interview-loop
 content-flow --help
 ```
 
@@ -44,6 +45,7 @@ Select your agent and project installation (not global). The local source includ
 
 - Claude Code: run `claude`, then invoke `/content-setup`.
 - Codex: run `codex`, then invoke `$content-setup`.
+- OpenCode: run `opencode`, then explicitly request `content-setup` by name. Verify that the agent loads it and then `interview-loop`; the manual-only flags are host-specific and are not an OpenCode permission guarantee.
 
 Other agents may use different invocation syntax and may not enforce manual-only metadata. Do not manually run init before the first agent test: verify the skill does it.
 
@@ -58,11 +60,11 @@ content-flow setup read
 
 Before initialization this reports a workspace error; after initialization it shows pending configuration and missing fields. During the interview, confirmed answers should appear in draft, not profile. Close the agent mid-interview and invoke setup again: it should resume, without re-asking confirmed answers. Approve the complete candidate; profile should now hold it and draft should be null. Invoke setup again to change only voice: the old approved profile should remain active until approval.
 
-Try an unrelated writing request in a new session: setup should not activate implicitly in agents honoring the invocation controls. Check that the interview captures semantic depth from the three references without asking every subpoint mechanically.
+Try an unrelated writing request in a new session: setup should not activate implicitly in agents honoring the invocation controls. Check that the interview captures semantic depth from the three references without asking every subpoint mechanically. It should use the conversation language, ask one open question at a time, extract information across domains, and propose positioning instead of requiring a polished positioning sentence. Test with and without interview-loop installed: when unavailable, the agent should give one notice and continue without installing anything. For an undecided memory setting, thresholds appear in blocked_optional; when disabled they appear in inapplicable_optional; when enabled unanswered thresholds appear in unaddressed_optional.
 
 ## 4. Refresh and validate
 
-After a new commit: pull the development branch, rerun npm install/test in the CLI package, and reinstall the skill from the local checkout into the test workspace. No need to create a fresh project unless testing first-run behavior again. The existing npm link normally points at the checkout; rerun it if needed. Restart the agent.
+After a new commit: pull the development branch, rerun npm install/test in the CLI package, and reinstall both skills from the local checkout into the test workspace. No need to create a fresh project unless testing first-run behavior again. The existing npm link normally points at the checkout; rerun it if needed. Restart the agent.
 
 Validate metadata and Markdown links from the repository root:
 
@@ -70,6 +72,8 @@ Validate metadata and Markdown links from the repository root:
 cd "$HOME/Projects/ai-skills"
 node skills/create-skill/scripts/validate-skill-metadata.mjs skills/content-setup
 node skills/create-skill/scripts/validate-skill-links.mjs skills/content-setup
+node skills/create-skill/scripts/validate-skill-metadata.mjs skills/interview-loop
+node skills/create-skill/scripts/validate-skill-links.mjs skills/interview-loop
 ```
 
 These tests cover configuration persistence and skill behavior. No n8n instance, paid rendering or publishing is needed. Keep real personal profile data out of the development repository.
