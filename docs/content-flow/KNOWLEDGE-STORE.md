@@ -146,3 +146,13 @@ Evidence remains the source-linked, deduplicated machine-readable record. Provis
 4. Analytics/learning: evidence and existing threshold logic on the same store.
 
 Schema 1 is detected and refused safely by schema 2 operations; no automatic migration or converter in this development stage (user explicitly chose to restart). Document how to use a new workspace without deleting the old one. Do not claim schema 2 is implemented until runtime tests and a real trial confirm it. See [acceptance criteria](ACCEPTANCE-CRITERIA.md).
+
+## Foundation implementation (development branch)
+
+The internal TypeScript module `packages/content-flow-cli/src/knowledge.ts` implements draft, immutable revision, selection manifest, archive, lexical discovery and reindex operations for schema 2 test workspaces. It is not yet exposed by the CLI and does not change the existing schema 1 setup workflow or package version. The next increment must replace schema 1 initialization/setup and wire the public commands, including --version, field-state/provenance validation, asset import, and atomic technical-settings promotion.
+
+For the initial foundation, generated frontmatter is a JSON object delimited by Markdown frontmatter markers. JSON is a restricted YAML 1.2 subset; this avoids an untested external parser dependency and permits human editing of the Markdown body. General YAML syntax is not accepted by this implementation. Revisit this encoding before public release; the illustrative conventional YAML above is a proposed target, not the current serialization.
+
+Committed manifest ancestry defines historical revisions, so orphaned files from an interrupted commit are not readable as approved history. Failed writes preserve previous selection and consume any orphaned revision number; retry can skip version numbers. A filesystem writer lock rejects concurrent mutations; a lock left by process termination requires deliberate manual inspection/recovery (no automatic stale-lock deletion). Ordinary discovery validates selected revision hashes and returns bounded metadata; it currently scans selected documents locally instead of relying on the derived index. Index regeneration is explicit. No automated reconciliation/purge, dependency graph, memory documents or evidence ingestion in this increment. General crash/power-loss durability, arbitrary hostile filesystem mutation, and Windows behavior are not yet established.
+
+Validation: 12/12 foundation tests passed on Linux / Node 22.16.0 with global TypeScript and Node types, including a non-root failure at final selection replacement. The package's declared minimum Node version remains 22.20.0. Full package suite and real setup/agent integration remain to be tested in the next increment.

@@ -29,3 +29,7 @@ content-flow setup approve
 ```
 
 Settings remain in `.content/settings.json`: `profile` holds active settings, `setup_draft` holds unapproved changes. The CLI checks shape and completeness, not editorial truth or whether a human actually approved the command. Avoid credentials; use environment variables or existing tool connections instead. Do not run simultaneous writers. Narrative configuration strings stay in JSON for atomic promotion; longer examples and assets may be referenced as separate files.
+
+## Knowledge Store (internal development foundation)
+
+The schema 2 store is being developed in `src/knowledge.ts` and tested independently in `tests/knowledge.test.mjs`. It is not a public command yet. Continue using the existing schema 1 CLI until the setup v2 increment. See [the implementation contract](../../docs/content-flow/KNOWLEDGE-STORE.md) for implemented scope, limitations and the next integration steps.
