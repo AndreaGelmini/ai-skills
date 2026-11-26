@@ -11,28 +11,14 @@ User invocation only. Run `content-flow init` then `content-flow setup read` in 
 
 Resume `draft`, otherwise `profile`. Extract supplied context before asking. Ask one question at a time, only about gaps, conflicts or requested changes. Offer alternatives when useful; confirm inferences.
 
-## Interview map
+Use the CLI's required and optional fields for structural completeness. Use these references for semantic sufficiency:
 
-Required:
-- `identity`: author/brand, role, niche, positioning.
-- `objectives`: intended outcomes and priorities.
-- `audience`: whom, needs, knowledge level.
-- `voice`: tone, register, language habits, anti-patterns.
-- `scope`: themes, boundaries, exclusions.
-- `platforms`: selected destinations/accounts.
-- `memory_enabled`, `startup_status`: explicit yes/no choices.
+- [Editorial profile](references/editorial-profile.md): identity, intent, audience, voice, themes and creative identity.
+- [Distribution](references/distribution.md): destinations, formats, language and cadence.
+- [Operations](references/operations.md): tools, memory and monitoring.
 
-Optional:
-- `rubrics`: recurring series and purpose.
-- `examples`: representative authentic writing or file references.
-- `visual`: style, palette, avatar, existing assets.
-- `platform_preferences`: goals, formats, constraints per destination.
-- `locale`, `cadence`: language/timezone and publishing rhythm.
-- `tools`: available integrations (e.g. n8n, media); no credentials.
-- Memory thresholds only if enabled; offer CLI defaults.
+Cover all applicable domains on initial setup; for updates, read only affected domains. Do not mechanically interview every subpoint.
 
-Cover each applicable area on initial setup, not every subpoint mechanically. For updates, revisit only affected areas. Local tracking; manual publishing unless explicitly configured.
-
-Persist confirmed answers after each turn with `content-flow setup save` (JSON patch on stdin). Null declines an optional field; omit deferred fields. Do not reopen declined choices unsolicited.
+Persist confirmed answers after each turn with `content-flow setup save` (JSON patch on stdin). Null declines an optional field; omit deferred fields. Do not reopen declined choices unsolicited. For memory thresholds, use the CLI defaults when no override is chosen.
 
 Summarize candidate, assumptions and deferred choices. Run `content-flow setup approve` only after explicit approval and no required gaps. Until then, the approved profile remains active.

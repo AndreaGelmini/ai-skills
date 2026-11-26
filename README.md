@@ -9,6 +9,7 @@ A personal collection of focused skills. Each skill can be installed independent
 | [session-status](skills/session-status/SKILL.md) | Take stock of the whole available session, including context, branches, needs, decisions, and progress. |
 | [imejis](skills/imejis/SKILL.md) | Create branded social assets through Imejis MCP, verify quota, export safely, and prepare repeatable Render API jobs. |
 
+| [content-setup](skills/content-setup/SKILL.md) | Configure a Content Flow editorial workspace (development preview; [local test guide](docs/content-flow/TESTING.md)). |
 
 ## Install selected skills
 
