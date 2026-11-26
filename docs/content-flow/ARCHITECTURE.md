@@ -1,8 +1,10 @@
-# Architecture — proposed implementation contract
+# Architecture — implementation contract
+
+The approved knowledge-store direction and proposed schema 2 implementation contract are in [KNOWLEDGE-STORE.md](KNOWLEDGE-STORE.md). CLI 0.3.0 still implements schema 1. The knowledge contract supersedes older monolithic setup paths and memory-document layouts; idea/artifact contracts remain in force.
 
 ## Package and installation
 
-Keep existing independently installable repository skills intact. New suite under skills/ with one directory per SKILL.md, shared resources in the common parent (skills/scripts/, skills/references/, skills/assets/ only if needed). Skill-specific resources in skills/<name>/scripts/, references/, assets/. Do not duplicate shared resources. The existing Skills CLI installs skills independently, so verify that sibling resources survive installation before choosing a delivery mechanism. If not, provide an explicit suite installer or shared runtime package; do not rely on inaccessible sibling paths. Shared runtime must work offline after setup. Prefer Python or TypeScript, choose one for common runtime after a portability spike. Do not prescribe framework or database prematurely. No graph DB, cloud service, daemon or GUI required.
+Keep existing independently installable repository skills intact. New suite under skills/ with one directory per SKILL.md, shared resources in the common parent (skills/scripts/, skills/references/, skills/assets/ only if needed). Skill-specific resources in skills/<name>/scripts/, references/, assets/. Do not duplicate shared resources. The existing Skills CLI installs skills independently, so verify that sibling resources survive installation before choosing a delivery mechanism. If not, provide an explicit suite installer or shared runtime package; do not rely on inaccessible sibling paths. Shared runtime must work offline after setup. The shared runtime is the existing Node.js/TypeScript package in packages/content-flow-cli/ (private until a verified release). Do not prescribe framework or database prematurely. No graph DB, cloud service, daemon or GUI required.
 
 ## Workspace layout (illustrative)
 
@@ -11,18 +13,18 @@ workspace/
   .content-index.json
   .content/
     settings.json
-    tracker.md
-    identity.md
-    voice.md
-    audience.md
-    platforms.md
-    rubrics.md
+    setup-draft.json
+    knowledge/
+      manifests/
+      profile/
+      strategy/
+      memory/
+      drafts/
+      index.json
     assets/
     log.jsonl
     memory/
       evidence.jsonl
-      provisional.json
-      consolidated.json
   ideas/
     idea-1001/
       metadata.json
@@ -48,7 +50,7 @@ A single-item export may be flat within publish/. Internal item/variant IDs rema
 
 ## Contracts
 
-Editorial Markdown with YAML frontmatter: schema_version, id, type, idea_id, optional item_id/variant_id, version, created_at, status, dependencies (artifact_id/version), source references. Body uses readable sections. Approved versions immutable through normal generation; deliberate edits create a new version. Track external/manual edits via content hash or explicit reconcile command (proposed). Current pointers and per-variant state in metadata.json. JSON schema validation for settings, index, metadata, publish manifest, analytics and memory. Relative paths confined to workspace; timestamps ISO 8601 with timezone. Unknowns explicit. Use atomic replace, collision-safe IDs, locking or conflict detection; preserve originals on failure. No destructive cleanup by default.
+Editorial Markdown with YAML frontmatter: schema_version, id, type, idea_id, optional item_id/variant_id, version, created_at, status, dependencies (artifact_id/version), source references. Body uses readable sections. Approved versions immutable through normal generation; deliberate edits create a new version. Track external/manual edits via content hash or explicit reconcile command (proposed). Current pointers and per-variant state in metadata.json. JSON validation for technical settings, manifests, indices, artifact metadata, publish manifests, analytics and evidence. Reusable knowledge documents have their own metadata contract, not mandatory idea_id; see KNOWLEDGE-STORE.md. Relative paths confined to workspace; timestamps ISO 8601 with timezone. Unknowns explicit. Use atomic replace, collision-safe IDs, locking or conflict detection; preserve originals on failure. No destructive cleanup by default.
 
 Logical entities: idea -> item -> variant -> artifact versions; variant -> publication receipts -> metric snapshots. Dependencies directed acyclic; exact version references; script detects stale transitive descendants when current input changes. Not every draft needs a spine. Explicit generation/approval creates snapshot; incidental edits need not. Merge new draft records both parent versions. An approved published snapshot remains historical truth.
 
@@ -56,7 +58,7 @@ States proposed: idea raw/interviewing/brief-ready/active/completed/archived; va
 
 ## Shared runtime operations
 
-init/validate workspace; resolve/list ideas; read/write/version artifact; select current version; compute dependency staleness; rebuild index; record event; export approved package; confirm publication; ingest metric snapshots; compute comparisons; update memory thresholds; status report. Machine-readable output, human-readable error, nonzero failure; dry-run for external handoff. Scripts do not perform editorial interpretation. Skill consumes JSON result and explains next step. Local tracker is initial implementation; document operations and provider selection, defer adapters until needed.
+init/validate workspace; resolve/list ideas; read/write/version artifact; select current version; compute dependency staleness; rebuild index; record event; export approved package; confirm publication; ingest metric snapshots; compute comparisons; update memory thresholds; status report. Machine-readable output, human-readable error, nonzero failure; dry-run for external handoff. Scripts do not perform editorial interpretation. Skill consumes JSON result and explains next step. Local tracker is initial implementation; document operations and provider selection, defer adapters until needed. Knowledge list/search/read, draft/save/approve/archive and reindex share the same local runtime. Memory evidence remains machine-readable; learning documents reuse the knowledge store.
 
 ## Precedence
 

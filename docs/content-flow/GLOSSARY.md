@@ -25,3 +25,10 @@
 - **Index** — rebuildable workspace projection, never sole source of truth.
 - **Status** — current actionable workspace report; not a background job.
 - **Reference** — shared editorial heuristic or verified platform requirement; project preferences may override heuristics.
+
+- **Knowledge Store** — common local infrastructure for independently versioned profile, strategy and memory documents; technical settings and selected versions are JSON state, document bodies are authoritative Markdown.
+- **Knowledge document** — independently useful, identifiable and versioned unit of editorial knowledge; not necessarily an idea artifact.
+- **Profile** — user-approved author identity, audience, voice, scope and creative identity; relatively stable, not immutable over time.
+- **Strategy** — user-approved current editorial choices, including experiments, objectives, rubrics, cadence and destination preferences.
+- **Selection manifest** — authoritative machine record of the currently approved document revisions; not the rebuildable discovery index.
+- **Frontier** — unresolved relevant interview nodes whose prerequisites are settled; recomputed after each answer.

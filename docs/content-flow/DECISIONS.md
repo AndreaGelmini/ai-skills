@@ -34,6 +34,22 @@ All 29 discussion nodes are consolidated below; later choices supersede earlier 
 | 28 | Full agreed MVP, incremental implementation | Personal use is sufficient motivation |
 | 29 | Efficiency AND editorial quality | GO for personal use, not proof of market fit |
 
+## Post-setup trial decisions
+
+The successful OpenCode + Big Pickle setup trial prompted a storage refinement, not a change to the overall MVP.
+
+| Decision | Accepted direction |
+|---|---|
+| D30 | Shared interview-loop primitive, explicit activation/delegation, sequential questions, dependency frontier, notice-and-continue fallback |
+| D31 | Technical JSON and authoritative editorial Markdown + YAML; agent interprets, CLI persists/validates/indexes |
+| D32 | One knowledge document per meaningful independent entity, without excessive fragmentation; separate profile, strategy, advisory memory domains |
+| D33 | Shared Knowledge Store for the already planned three-level memory; no duplicate memory system; CLI retrieval with selective context, no MCP/vector store in MVP |
+| D34 | Experimental/active/archived lifecycle, preserve approved versions and historical dependencies; explicit removal possible, no destructive defaults |
+| D35 | User-placeable/importable visual assets; no vision model required; explicit provenance and unknown/declined distinction, sequential optional questions |
+| D36 | Schema break allowed during development; no migration converter now; preserve old data, support CLI version reporting |
+
+Proposed technical realization: [Knowledge Store contract](KNOWLEDGE-STORE.md). Implementation details not explicitly discussed (manifest-based atomic selection, precise metadata, command flags) are defaults to verify during coding.
+
 ## Latest implementation constraints
 
 Skill Builder conventions apply: concise English instructions, conversation-language outputs, meaningful routing descriptions, one job, aim well below 500 words. Keep private scripts/references/assets within skill; shared resources in the nearest common parent, without runtime duplication. TypeScript or Python scripts for deterministic operations. Existing repo skills remain independent. No new feature without explicit scope decision.

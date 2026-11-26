@@ -20,6 +20,19 @@ These are proposed executable scenarios for the agreed full MVP. No claims of co
 14. Recovery: interrupted writes, invalid YAML/JSON, duplicate ID, traversal and manual edits handled without silent loss; existing unrelated workspace files preserved.
 15. Installation: skill metadata/link validators pass, required shared runtime/reference resources resolve in real consuming workspace, no external service required, existing repository skills unaffected.
 
+## Knowledge Store and setup v2 gates (next increment)
+
+These are additional executable acceptance scenarios, not claims of completed testing.
+
+- Independent entities: two rubrics and two platform documents; editing one leaves unrelated revision hashes unchanged; renamed entity retains ID. No duplicate authoritative prose in settings JSON.
+- Draft and approval: candidate is resumable; read/list excludes it by default. Reject incomplete required coverage or unconfirmed material proposals. Interrupted pre-commit leaves old selection/technical settings intact; interrupted post-commit recovers committed state. Reject stale baselines and concurrent writer conflicts.
+- Retrieval: list/search returns bounded metadata only; read returns requested revisions only. Domain/type/tag/status filters, no-match, explicit history, archived exclusion and memory-disabled exclusion are tested. Delete/corrupt index and rebuild. Missing/modified selected revisions and duplicate IDs report integrity conflicts, not silent approval.
+- Lifecycle: archive one experimental rubric, preserve old revision/dependencies and omit from normal discovery; no automatic deletion or regeneration. Manual draft edits can be approved after validation; approved-file external edits require explicit reconciliation.
+- Interview: explicit facts versus tentative interpretations; unanswered optional is not declined; one question per turn including optional branches; final confirmation clearly identifies synthesis; transient jokes are not persistent guidance. Test optional dependency branches and missing interview-loop fallback in consuming agent.
+- Assets: import authorized local image/brief without overwrite, verify relative path and byte preservation; allow user placement or defer; no vision capability required or fabricated inspection. No credentials in configuration.
+- Compatibility: schema 1 refuses schema 2 writes without modification, new workspace initializes safely; --version reports installed package version. No converter required.
+- Memory: evidence stays the source of truth for support/contrary counts; later provisional/consolidated document revisions reuse same store and do not change profile or strategy autonomously.
+
 ## Personal-value trial
 
 Use at least three real tasks as proposed starting sample: vague intuition, tool discovery with factual sources, and multiweek rubric sequence. Compare to ordinary agent prompting on equivalent input. Record active author minutes, turns, corrections, rewrite effort, final approval, ability to resume, forgotten tasks and perceived voice/native fit. User judges quality blind where feasible. Proposed success: materially less active work, majority of outputs usable with minor edits, no loss of intent, no duplicate publication claims, reliable recovery. Establish numerical thresholds with user before trial if needed; don't claim market validation from personal use.

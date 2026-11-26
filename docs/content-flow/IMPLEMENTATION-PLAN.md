@@ -1,6 +1,6 @@
-# Coding agent handoff — incremental delivery of complete MVP
+# Incremental delivery of complete MVP
 
-Read [VISION](VISION.md), [DECISIONS](DECISIONS.md), [GLOSSARY](GLOSSARY.md), [MVP-SPEC](MVP-SPEC.md), [ARCHITECTURE](ARCHITECTURE.md), [SKILLS-CATALOG](SKILLS-CATALOG.md), [ACCEPTANCE-CRITERIA](ACCEPTANCE-CRITERIA.md). These documents consolidate discussion; implementation has not begun. Resolve technical defaults against actual repo and agent capabilities; surface material conflicts instead of silently changing product decisions.
+Read [VISION](VISION.md), [DECISIONS](DECISIONS.md), [GLOSSARY](GLOSSARY.md), [MVP-SPEC](MVP-SPEC.md), [ARCHITECTURE](ARCHITECTURE.md), [SKILLS-CATALOG](SKILLS-CATALOG.md), [ACCEPTANCE-CRITERIA](ACCEPTANCE-CRITERIA.md). These documents consolidate discussion. CLI 0.3.0 check/init/setup, content-setup and interview-loop are implemented on content-flow-mvp; the first real setup trial informed the approved storage refinement. Before idea-interview, implement the [Knowledge Store contract](KNOWLEDGE-STORE.md) in small tested increments, then update setup. Do not start the full memory engine early. Resolve technical defaults against actual repo and agent capabilities; surface material conflicts instead of silently changing product decisions.
 
 ## Work graph
 
@@ -9,7 +9,9 @@ Read [VISION](VISION.md), [DECISIONS](DECISIONS.md), [GLOSSARY](GLOSSARY.md), [M
 | T01 | Inspect repo conventions, Skills CLI packaging spike, choose minimal Python/TS runtime; verify common parent resources install correctly | — | Reproducible installation fixture and brief design decision |
 | T02 | Workspace schemas, safe read/write, stable IDs, versions, dependencies, events, index and recovery | T01 | Unit/integration tests |
 | T03 | content-setup and resumable configuration, tracker convention, optional tools/memory/status | T02 | Setup acceptance fixtures |
-| T04 | Context resolution, idea-interview, brief provenance/approval | T02,T03 | Raw and detailed idea scenarios |
+| T02-K | Knowledge Store foundation: document contract, immutable revisions, atomic manifest selection, selective index/retrieval | T01 | Storage, integrity, conflict and retrieval tests |
+| T03-K | Setup schema 2, provenance, assets, interview refinements, --version; safely reject schema 1, no migration | T02-K,T03 | Resume/approval/asset tests and real OpenCode trial |
+| T04 | Context resolution, idea-interview, brief provenance/approval | T02,T03-K | Raw and detailed idea scenarios |
 | T05 | Shared platform/format/hook references, native technical constraints and source/version policy | T01,T03 | Reference fixtures, no unsupported current platform claims |
 | T06 | to-spine and sequence planning, upfront/progressive | T04 | Single/sequence fixtures |
 | T07 | to-draft and spine specialization, version compare/merge, full blog output | T04,T05,T06 | Native output and stale tests |
@@ -17,7 +19,7 @@ Read [VISION](VISION.md), [DECISIONS](DECISIONS.md), [GLOSSARY](GLOSSARY.md), [M
 | T09 | Optional media direction/composition spec, external tool discovery/import and visual review | T03,T05,T07 | No-tool fallback and imported asset fixture |
 | T10 | to-content package, posting.md, manual publication and optional generic configured handoff | T08,T09 | Exact approved export and receipt tests |
 | T11 | Analytics snapshots, screenshot/CSV/manual ingestion, deterministic fixed comparisons | T10 | Provenance and missing-value tests |
-| T12 | Multipost patterns, optional three-level memory, thresholds and recommendations | T11 | Scope/dedup/promotion/declassify tests |
+| T12 | Multipost patterns, optional three-level memory on Knowledge Store, thresholds and recommendations | T11,T02-K | Scope/dedup/promotion/declassify tests |
 | T13 | content-status and content-flow flexible routing, startup configuration | T04,T06,T07,T08,T10,T12 | Resume, skip, pending and stale scenarios |
 | T14 | Install/validate suite, end-to-end tests, README usage and real-task trial | T01–T13 | Acceptance report, documented limits |
 
