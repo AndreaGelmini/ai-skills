@@ -1,35 +1,30 @@
-# Content Flow CLI
+# Content Flow CLI — development 0.4.0
 
-Node.js >=22.20; TypeScript; no runtime dependencies. Private until the package scope and release are approved.
+Node.js >=22.20. TypeScript, no runtime dependencies. Private package; no registry release. Schema 2 replaces the monolithic schema 1 settings. Use a new workspace; old settings are rejected, never migrated or overwritten.
 
 ```sh
 npm install
 npm test
-node dist/cli.js check --workspace /path/to/project
-node dist/cli.js init --workspace /path/to/project
+npm link
+content-flow --version
+content-flow init --workspace /path/to/existing/project
 ```
 
-`check` is read-only. `init` creates missing managed paths, never replaces existing data, and refuses to proceed on failed preflight. Both default to the current directory; the workspace itself must exist. Extra settings keys and unrelated files are preserved. The only settings validation in this increment is valid JSON, schema version 1 and pending/approved configuration marker; editorial completeness is a later setup contract. Permissions are checked for the running process, not guaranteed against future filesystem changes. Managed symlinks are rejected. Settings creation uses a temporary file and hard link on a local filesystem supporting hard links; failure is reported, not silently bypassed. Concurrent mutation of the workspace is not supported yet.
+`check` is a read-only structural preflight; `init` creates missing managed paths, never overwrites. Exit codes: 0 OK, 1 incomplete workspace, 2 error. Commands default to current directory. Settings contain technical choices and approved manifest pointer; editorial prose lives in independent Markdown revisions. `setup read` distinguishes active settings, candidate, missing fields, optional states and unconfirmed documents. See the [skill CLI contract](../../skills/content-setup/references/cli.md) for exact JSON patch examples.
 
-JSON output: status (ok/incomplete/error), configuration (pending/approved/null), missing and created relative paths, warnings and errors. Exit codes: 0 structurally ready, 1 missing paths, 2 error. `ok` does not mean editorial setup is approved. No automatic permission changes or destructive repair.
-
-To try the local package: `npm pack`, then `npm exec --package ./andreagelmini-content-flow-0.3.0.tgz -- content-flow check --workspace /path/to/project`. Do not use a registry package of the same name before a verified release.
-
-## Editorial setup (0.3.0)
-
-Run `init` first, then `content-flow setup read`. `setup save` accepts a JSON object on stdin and merges its top-level fields into the candidate; if there is no candidate, it starts with the active profile. It does not activate changes. `setup approve` requires a candidate with every required field and promotes it to `profile` in a single settings replacement. The caller must obtain explicit approval before invoking it. `setup read` returns `profile`, `draft`, `required`, `optional`, `missing`, `unaddressed_optional` and `defaults`. In 0.3.0, `optional_dependencies` maps conditional fields to prerequisites; `blocked_optional` lists fields awaiting a prerequisite decision, `inapplicable_optional` lists fields whose prerequisite is false, and `unaddressed_optional` lists only currently applicable unanswered fields. Existing values remain preserved when their branch closes. The CLI reports structural dependencies, not semantic interview choices or agent skill availability. Other skills consume the active profile, not the draft.
-
-Required text: `identity`, `objectives`, `audience`, `voice`, `scope`. Required `platforms` is an array of nonempty destination names; `memory_enabled` and `startup_status` are booleans. Optional narrative strings: `rubrics`, `examples`, `visual`, `platform_preferences`, `locale`, `cadence`, `tools`. They may contain project-relative asset references. Optional thresholds `memory_support_threshold` and `memory_contrary_threshold` accept positive integers; the CLI returns defaults of 5 and 10 and applies them on approval when memory is enabled and no threshold was chosen. Null declines an optional choice (for a threshold, use the default); leave deferred fields unset. An unset optional field may be revisited when setup resumes. No actual memory engine, media tool or publisher is implemented in this increment. An available n8n instance can be recorded in `tools` without enabling publishing or storing credentials.
+`setup save` receives JSON on stdin; `setup approve` promotes candidate only after caller obtains explicit user approval and required coverage/provenance checks pass. `setup discard` abandons candidate without changing approved data. Manual draft edits invalidate confirmation. `knowledge save` takes a single document proposal on stdin; `knowledge archive ID` stages a proposed archive; `knowledge approve` shares the setup approval gate. Use `setup save` with confirm IDs after user acceptance. Use stable IDs for updates, not titles. The CLI validates declared provenance, not actual consent.
 
 ```sh
-printf '%s\n' '{"identity":"Independent developer","voice":"Direct"}' | content-flow setup save
-content-flow setup read
-# Only after a complete candidate has been reviewed and approved by the user:
-content-flow setup approve
+content-flow knowledge list --domain strategy
+content-flow knowledge search --query tutorial --type rubric
+content-flow knowledge read voice
+content-flow knowledge read voice --version-number 1
+content-flow knowledge reindex
+content-flow asset folder
+content-flow asset list
+content-flow asset import /path/to/avatar.png
 ```
 
-Settings remain in `.content/settings.json`: `profile` holds active settings, `setup_draft` holds unapproved changes. The CLI checks shape and completeness, not editorial truth or whether a human actually approved the command. Avoid credentials; use environment variables or existing tool connections instead. Do not run simultaneous writers. Narrative configuration strings stay in JSON for atomic promotion; longer examples and assets may be referenced as separate files.
+List/search use case-insensitive literal matching and return metadata only, bounded by `--limit` (default 50, max 500); archived documents excluded unless explicitly filtered. Read returns selected bodies or historical versions. Index is regenerated after approval or by reindex; list/search independently validate selected revisions and do not trust a stale index. Imported assets are unique local copies; only relative managed paths are accepted in document metadata. The CLI checks presence, not visual meaning or asset-byte integrity after manual edits. No memory learning engine, external integrations, publishing, background jobs or registry package in this increment.
 
-## Knowledge Store (internal development foundation)
-
-The schema 2 store is being developed in `src/knowledge.ts` and tested independently in `tests/knowledge.test.mjs`. It is not a public command yet. Continue using the existing schema 1 CLI until the setup v2 increment. See [the implementation contract](../../docs/content-flow/KNOWLEDGE-STORE.md) for implemented scope, limitations and the next integration steps.
+Storage limits: JSON object frontmatter (YAML 1.2 subset), one writer with a filesystem lock, no automatic stale-lock removal, no arbitrary YAML, no purge or migration. Do not edit approved files, manifests or settings directly; manual draft body edits can be reviewed/confirmed. Orphaned files can remain after an interrupted write; only committed manifest ancestry is approved history. Use a local filesystem supporting hard links and atomic rename. See [Knowledge Store](../../docs/content-flow/KNOWLEDGE-STORE.md).

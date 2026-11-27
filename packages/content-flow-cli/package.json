@@ -1,24 +1,11 @@
 {
   "name": "@andreagelmini/content-flow",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=22.20.0"
-  },
-  "bin": {
-    "content-flow": "dist/cli.js"
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "test": "npm run build && node --test tests/*.test.mjs",
-    "prepack": "npm run build"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "typescript": "~5.8.3"
-  }
+  "engines": { "node": ">=22.20.0" },
+  "bin": { "content-flow": "dist/cli.js" },
+  "files": ["dist"],
+  "scripts": { "build": "tsc", "test": "npm run build && node --test tests/*.test.mjs", "prepack": "npm run build" },
+  "devDependencies": { "@types/node": "^22.0.0", "typescript": "~5.8.3" }
 }

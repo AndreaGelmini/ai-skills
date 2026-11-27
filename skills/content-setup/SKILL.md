@@ -7,20 +7,22 @@ disable-model-invocation: true
 
 # Content Setup
 
-User invocation only. Run `content-flow init` then `content-flow setup read` in the project with a trusted compatible CLI (0.3.0+). If unavailable, request installation of the verified package. Resolve structural errors first.
+User invocation only. Check `content-flow --version` (0.4.x), run `content-flow init` then `content-flow setup read` in the project. If unavailable, request installation of the verified CLI; resolve structural errors first. Never overwrite a legacy workspace.
 
-Resume `draft`, otherwise `profile`. For updates, clarify only requested changes and affected dependencies.
+Resume the candidate, otherwise use approved metadata; for updates read only affected documents. Follow the [CLI contract](references/cli.md) for patches, provenance, asset handling and approval.
 
-Load `interview-loop` by name using the agent's skill mechanism if available. If absent or loading fails, notify the user once in their language and continue: extract known information across domains, ask one open question at a time about unresolved prerequisites, use closed questions for discrete choices, propose syntheses and confirm inferences. Use the user's language. Do not install dependencies automatically.
+Load `interview-loop` by name if available. If absent or loading fails, notify the user once and continue: extract known information across domains, ask one open question at a time about unresolved prerequisites, use closed questions for discrete choices, propose syntheses and confirm inferences. Use the user's language when known. Do not auto-install dependencies.
 
-Use CLI fields and dependency states for structural completeness; skip blocked or inapplicable fields. Use these references for semantic sufficiency:
+Use CLI field/dependency states for structural completeness and these references for semantic sufficiency:
 
 - [Editorial profile](references/editorial-profile.md): identity, intent, audience, voice, themes and creative identity.
 - [Distribution](references/distribution.md): destinations, formats, language and cadence.
 - [Operations](references/operations.md): tools, memory and monitoring.
 
-Cover all applicable domains on initial setup; for updates, read only affected domains. Do not mechanically interview every subpoint.
+Cover applicable domains individually, including optional ones, unless the user elects to defer or finish. Do not mechanically interview every subpoint. Absence is not refusal. Do not turn transient jokes or moods into permanent guidance.
 
-Persist confirmed answers after each turn with `content-flow setup save` (JSON patch on stdin). Null declines an optional field; omit deferred fields. Do not reopen declined choices unsolicited. Use CLI defaults for memory thresholds when no override is chosen.
+After each answer, save relevant Markdown document proposals and confirmed technical choices with `setup save`. Preserve inferred/proposed provenance until confirmed; use existing IDs to update entities. Do not duplicate the same preference across documents.
 
-Summarize candidate, assumptions and deferred choices. Run `content-flow setup approve` only after explicit approval and no required gaps. Until then, the approved profile remains active.
+For visual identity, offer importing supplied files, creating an asset inbox for user placement, or deferring. Never claim image analysis without vision capability.
+
+Before approval, read the full changed candidate (`setup read --details`), summarize decisions, tentative interpretations and outstanding points. After explicit user approval, confirm the included proposals by ID, resolve required gaps and run `setup approve`. The previous approved selection remains active until promotion. Use `setup discard` only on request.

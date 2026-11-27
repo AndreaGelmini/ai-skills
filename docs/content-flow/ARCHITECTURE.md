@@ -1,6 +1,6 @@
 # Architecture — implementation contract
 
-The approved knowledge-store direction and proposed schema 2 implementation contract are in [KNOWLEDGE-STORE.md](KNOWLEDGE-STORE.md). CLI 0.3.0 still implements schema 1. The knowledge contract supersedes older monolithic setup paths and memory-document layouts; idea/artifact contracts remain in force.
+The approved knowledge-store direction and schema 2 implementation contract are in [KNOWLEDGE-STORE.md](KNOWLEDGE-STORE.md). CLI 0.4.0 implements schema 2 setup and profile/strategy retrieval; later consumers and memory evidence remain planned. The knowledge contract supersedes older monolithic setup paths and memory-document layouts; idea/artifact contracts remain in force.
 
 ## Package and installation
 

@@ -1,129 +1,36 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, writeFile, readFile, readdir, symlink, chmod } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { init } from '../dist/workspace.js';
+import { init,check } from '../dist/workspace.js';
 import { setup } from '../dist/setup.js';
-
-const complete = { identity: 'Independent developer', objectives: 'Share discoveries', audience: 'Developers', voice: 'Direct', scope: 'Tools and ideas', platforms: ['linkedin'], memory_enabled: false, startup_status: true };
-async function fixture(t) {
-  const root = await mkdtemp(join(tmpdir(), 'setup-'));
-  t.after(() => rm(root, { recursive: true, force: true }));
-  await init(root);
-  return root;
-}
-
-test('save resumes a partial interview; explicit null means optional declined', async t => {
-  const root = await fixture(t);
-  await setup(root, 'save', { identity: complete.identity, visual: null });
-  const result = await setup(root, 'read');
-  assert.equal(result.configuration, 'pending');
-  assert.equal(result.profile, null);
-  assert.equal(result.draft.identity, complete.identity);
-  assert.ok(!result.unaddressed_optional.includes('visual'));
-  assert.ok(result.missing.includes('audience'));
-  await setup(root, 'save', { audience: 'Developers' });
-  assert.equal((await setup(root, 'read')).draft.identity, complete.identity);
-});
-
-test('approval refuses incomplete draft and preserves it', async t => {
-  const root = await fixture(t);
-  await setup(root, 'save', { identity: 'Author' });
-  await assert.rejects(setup(root, 'approve'), /Missing required/);
-  assert.equal((await setup(root, 'read')).draft.identity, 'Author');
-});
-
-test('approved profile remains active during updates', async t => {
-  const root = await fixture(t);
-  await setup(root, 'save', complete);
-  await setup(root, 'approve');
-  await setup(root, 'save', { voice: 'Conversational' });
-  const pending = await setup(root, 'read');
-  assert.equal(pending.configuration, 'approved');
-  assert.equal(pending.profile.voice, 'Direct');
-  assert.equal(pending.draft.voice, 'Conversational');
-  const approved = await setup(root, 'approve');
-  assert.equal(approved.profile.voice, 'Conversational');
-  assert.equal(approved.draft, null);
-  assert.equal(approved.profile.memory_enabled, false);
-});
-
-test('rejects invalid patches without writing; preserves unrelated settings', async t => {
-  const root = await fixture(t);
-  const path = join(root, '.content/settings.json');
-  const original = { schema_version: 1, configuration: 'pending', custom: 'keep' };
-  await writeFile(path, JSON.stringify(original));
-  for (const patch of [{ identity: '' }, { platforms: [] }, { memory_enabled: 'true' }, { memory_support_threshold: 0 }, { configuration: 'approved' }]) {
-    await assert.rejects(setup(root, 'save', patch));
-    assert.deepEqual(JSON.parse(await readFile(path, 'utf8')), original);
-  }
-  await setup(root, 'save', complete);
-  await setup(root, 'approve');
-  assert.equal(JSON.parse(await readFile(path, 'utf8')).custom, 'keep');
-});
-
-test('setup rejects uninitialized workspace', async t => {
-  const root = await fixture(t);
-  await assert.rejects(setup(join(root, 'absent'), 'read'), /Workspace not ready/);
-});
-
-test('CLI supports stdin patch and explicit approval', async t => {
-  const root = await fixture(t);
-  const cli = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
-  const run = (action, input) => spawnSync(process.execPath, [cli, 'setup', action], { cwd: root, encoding: 'utf8', input });
-  assert.equal(run('save', JSON.stringify(complete)).status, 0);
-  assert.equal(run('approve').status, 0);
-  assert.equal(JSON.parse(run('read').stdout).profile.identity, complete.identity);
-  assert.equal(run('save', 'broken').status, 2);
-});
-
-
-test('memory defaults are exposed and applied only for enabled memory; explicit threshold wins', async t => {
-  const root = await fixture(t);
-  const initial = await setup(root, 'read');
-  assert.deepEqual(initial.defaults, { memory_support_threshold: 5, memory_contrary_threshold: 10 });
-  await setup(root, 'save', { ...complete, memory_enabled: true, memory_support_threshold: 7, visual: null });
-  const saved = await setup(root, 'read');
-  assert.ok(!saved.unaddressed_optional.includes('visual'));
-  assert.ok(saved.unaddressed_optional.includes('examples'));
-  const approved = await setup(root, 'approve');
-  assert.equal(approved.profile.memory_support_threshold, 7);
-  assert.equal(approved.profile.memory_contrary_threshold, 10);
-  assert.equal(approved.profile.visual, null);
-  assert.ok(!Object.hasOwn(approved.profile, 'examples'));
-});
-
-test('memory branch is blocked, excluded or open according to its prerequisite', async t => {
-  const root = await fixture(t);
-  const keys = ['memory_support_threshold', 'memory_contrary_threshold'];
-  const initial = await setup(root, 'read');
-  assert.deepEqual(initial.optional_dependencies, Object.fromEntries(keys.map(key => [key, { memory_enabled: true }])));
-  assert.deepEqual(initial.blocked_optional, keys);
-  assert.deepEqual(initial.inapplicable_optional, []);
-  assert.ok(keys.every(key => !initial.unaddressed_optional.includes(key)));
-  const disabled = await setup(root, 'save', { memory_enabled: false });
-  assert.deepEqual(disabled.blocked_optional, []);
-  assert.deepEqual(disabled.inapplicable_optional, keys);
-  assert.ok(keys.every(key => !disabled.unaddressed_optional.includes(key)));
-  const enabled = await setup(root, 'save', { memory_enabled: true });
-  assert.deepEqual(enabled.blocked_optional, []);
-  assert.deepEqual(enabled.inapplicable_optional, []);
-  assert.ok(keys.every(key => enabled.unaddressed_optional.includes(key)));
-});
-
-test('closing and reopening the memory branch preserves confirmed thresholds and active profile', async t => {
-  const root = await fixture(t);
-  await setup(root, 'save', { ...complete, memory_enabled: true, memory_support_threshold: 7 });
-  await setup(root, 'approve');
-  const disabled = await setup(root, 'save', { memory_enabled: false });
-  assert.equal(disabled.profile.memory_enabled, true);
-  assert.equal(disabled.draft.memory_support_threshold, 7);
-  assert.ok(disabled.inapplicable_optional.includes('memory_support_threshold'));
-  const reopened = await setup(root, 'save', { memory_enabled: true });
-  assert.equal(reopened.draft.memory_support_threshold, 7);
-  assert.ok(!reopened.unaddressed_optional.includes('memory_support_threshold'));
-  assert.deepEqual(reopened.inapplicable_optional, []);
-});
+import { KnowledgeStore } from '../dist/knowledge.js';
+import { asset } from '../dist/assets.js';
+const cli = fileURLToPath(new URL('../dist/cli.js',import.meta.url));
+const doc=(type,body=type+' body',more={})=>({domain:['objectives','platform','rubric','cadence'].includes(type)?'strategy':'profile',type,title:type,summary:type+' summary',status:'active',tags:[],body,provenance:'confirmed',...more});
+const complete=()=>({documents:['identity','objectives','audience','voice','scope','platform'].map(x=>doc(x)),technical:{memory_enabled:false,startup_status:true}});
+async function fixture(t,ready=true){const root=await mkdtemp(join(tmpdir(),'cf04-'));t.after(()=>rm(root,{recursive:true,force:true}));if(ready)await init(root);return root;}
+const run=(root,args,input)=>spawnSync(process.execPath,[cli,...args],{cwd:root,encoding:'utf8',input:input===undefined?undefined:JSON.stringify(input)});
+const val=r=>{assert.equal(r.status,0,r.stdout+r.stderr);return JSON.parse(r.stdout);};
+async function seed(root){await setup(root,'save',complete());return setup(root,'approve');}
+test('schema 2 initialization is read-only on check and idempotent on init',async t=>{const r=await fixture(t,false);assert.equal((await check(r)).status,'incomplete');assert.deepEqual(await readdir(r),[]);assert.equal((await init(r)).created.length,3);const p=join(r,'.content/settings.json');const original=await readFile(p);assert.equal(JSON.parse(original).schema_version,2);assert.deepEqual((await init(r)).created,[]);assert.deepEqual(await readFile(p),original);});
+test('legacy schema 1 remains byte-identical across init/setup/assets/knowledge',async t=>{const r=await fixture(t);const p=join(r,'.content/settings.json');await writeFile(p,'{"schema_version":1,"configuration":"approved","profile":{"identity":"legacy"}}\n');const before=await readFile(p);for(const args of [['init'],['check'],['setup','read'],['asset','folder'],['knowledge','reindex']])assert.equal(run(r,args).status,2);assert.deepEqual(await readFile(p),before);assert.deepEqual(await readdir(join(r,'.content')),['settings.json']);});
+test('invalid settings blocks init without overwriting',async t=>{const r=await fixture(t);const p=join(r,'.content/settings.json');for(const raw of ['broken','{"schema_version":2,"configuration":"bad"}','{"schema_version":2,"configuration":"approved","active_manifest":"../bad"}']){await writeFile(p,raw);assert.equal((await init(r)).status,'error');assert.equal(await readFile(p,'utf8'),raw);}});
+test('symlink and conflicting managed directory are rejected', {skip:process.platform==='win32'},async t=>{const r=await fixture(t,false),outside=await fixture(t,false);await symlink(outside,join(r,'.content'),'dir');assert.equal((await init(r)).status,'error');assert.deepEqual(await readdir(outside),[]);await rm(join(r,'.content'));await writeFile(join(r,'ideas'),'keep');assert.equal((await init(r)).status,'error');assert.equal(await readFile(join(r,'ideas'),'utf8'),'keep');});
+test('missing workspace is not created; partial workspace is resumed',async t=>{const r=await fixture(t,false);assert.equal((await init(join(r,'absent'))).status,'error');await mkdir(join(r,'ideas'));assert.equal((await init(r)).created.length,2);});
+test('nonwritable directory blocks initialization', {skip:process.platform==='win32'||process.getuid?.()===0},async t=>{const r=await fixture(t,false);await mkdir(join(r,'.content'));await chmod(join(r,'.content'),0o500);try{assert.equal((await init(r)).status,'error');}finally{await chmod(join(r,'.content'),0o700);}});
+test('partial candidate resumes with metadata only; missing and unanswered are distinct',async t=>{const r=await fixture(t);const s=await setup(r,'save',{documents:[doc('identity','A biography')],fields:{visual:'deferred'}});assert.equal(s.configuration,'pending');assert.equal(s.active_documents.length,0);assert.equal(s.states.visual,'deferred');assert.equal(s.states.examples,'unanswered');assert.equal(s.states.identity,'answered');assert.ok(s.missing.includes('voice'));assert.ok(!('body' in s.draft.documents[0]));const resumed=await setup(r,'read',undefined,true);assert.equal(resumed.draft.id,s.draft.id);assert.equal(resumed.draft.documents[0].body.trim(),'A biography');await assert.rejects(setup(r,'approve'),/Missing required/);});
+test('memory frontier blocks thresholds until enabled; disabling preserves overrides',async t=>{const r=await fixture(t);const keys=['memory_support_threshold','memory_contrary_threshold'];assert.deepEqual((await setup(r,'read')).blocked_optional,keys);assert.deepEqual((await setup(r,'save',{technical:{memory_enabled:false}})).inapplicable_optional,keys);assert.deepEqual((await setup(r,'save',{technical:{memory_enabled:true}})).unaddressed_optional.filter(x=>keys.includes(x)),keys);await setup(r,'save',{technical:{memory_support_threshold:7}});await setup(r,'save',{technical:{memory_enabled:false}});assert.equal((await setup(r,'save',{technical:{memory_enabled:true}})).technical.memory_support_threshold,7);});
+test('unconfirmed proposal blocks approval until explicitly confirmed',async t=>{const r=await fixture(t);const p=complete();p.documents[3].provenance='inferred';let s=await setup(r,'save',p);assert.deepEqual(s.unconfirmed,['voice']);await assert.rejects(setup(r,'approve'),/Unconfirmed documents: voice/);s=await setup(r,'save',{confirm:['voice']});assert.deepEqual(s.unconfirmed,[]);assert.equal((await setup(r,'approve')).configuration,'approved');});
+test('manual draft edit invalidates confirmation fingerprint',async t=>{const r=await fixture(t);const s=await setup(r,'save',complete());const p=join(r,'.content/knowledge/drafts',s.draft.id,'voice.md');await writeFile(p,(await readFile(p,'utf8')).replace('voice body','changed body'));assert.deepEqual((await setup(r,'read')).unconfirmed,['voice']);await assert.rejects(setup(r,'approve'),/Unconfirmed/);await setup(r,'save',{confirm:['voice']});await setup(r,'approve');assert.equal((await new KnowledgeStore(r).readDocument('voice')).body.trim(),'changed body');});
+test('atomic setup promotion stores prose only in Markdown; defaults and optional decisions persist',async t=>{const r=await fixture(t);const p=complete();p.technical.memory_enabled=true;p.technical.memory_support_threshold=7;p.fields={visual:'declined'};await setup(r,'save',p);const a=await setup(r,'approve');assert.equal(a.configuration,'approved');assert.equal(a.draft,null);assert.deepEqual(a.missing,[]);assert.equal(a.states.visual,'declined');assert.equal(a.technical.memory_support_threshold,7);assert.equal(a.technical.memory_contrary_threshold,10);const settings=JSON.parse(await readFile(join(r,'.content/settings.json'),'utf8'));assert.ok(!('profile' in settings));assert.ok(!('identity' in settings));assert.ok(settings.active_manifest);assert.ok(!JSON.stringify(settings).includes('voice body'));assert.equal((await new KnowledgeStore(r).readDocument('voice')).body.trim(),'voice body');const index=JSON.parse(await readFile(join(r,'.content/knowledge/index.json'),'utf8'));assert.equal(index.generation,settings.active_manifest);assert.equal(index.documents.length,6);});
+test('updates preserve prior profile, discard does not mutate active state',async t=>{const r=await fixture(t);await seed(r);const store=new KnowledgeStore(r);const before=await readFile(join(r,'.content/settings.json'));await setup(r,'save',{documents:[doc('voice','new voice')],technical:{memory_enabled:true}});assert.equal((await store.readDocument('voice')).body.trim(),'voice body');assert.equal((await setup(r,'read')).active_technical.memory_enabled,false);await setup(r,'discard');assert.deepEqual(await readFile(join(r,'.content/settings.json')),before);assert.equal((await setup(r,'read')).draft,null);});
+test('withdraw tentative optional proposal; approve without it',async t=>{const r=await fixture(t);await seed(r);const s=await setup(r,'save',{documents:[doc('rubric','test',{provenance:'proposed'})]});await setup(r,'save',{withdraw:[s.unconfirmed[0]]});assert.deepEqual((await setup(r,'read')).unconfirmed,[]);await setup(r,'approve');assert.equal((await new KnowledgeStore(r).list({type:'rubric'})).total,0);});
+test('archive requires confirmation and cannot remove required singleton or last platform',async t=>{const r=await fixture(t);await seed(r);let s=await setup(r,'save',{documents:[doc('rubric','weekly experiment',{status:'experimental'})]});const id=s.draft.documents[0].id;await setup(r,'approve');s=await setup(r,'save',{archive:[id]});assert.deepEqual(s.unconfirmed,[id]);await setup(r,'save',{confirm:[id]});await setup(r,'approve');const store=new KnowledgeStore(r);assert.equal((await store.list({type:'rubric'})).total,0);assert.equal((await store.readDocument(id,1)).meta.status,'experimental');await setup(r,'save',{archive:['voice']});await setup(r,'save',{confirm:['voice']});await assert.rejects(setup(r,'approve'),/Missing required fields: voice/);await setup(r,'discard');const platform=(await store.list({type:'platform'})).documents[0].id;await setup(r,'save',{archive:[platform]});await setup(r,'save',{confirm:[platform]});await assert.rejects(setup(r,'approve'),/Missing required fields: platforms/);});
+test('invalid technical fields and provenance are rejected',async t=>{const r=await fixture(t);for(const p of [{technical:{memory_enabled:'true'}},{technical:{memory_support_threshold:0}},{technical:{credentials:'secret'}},{fields:{identity:'declined'}},{documents:[{...doc('voice'),provenance:'guessed'}]}])await assert.rejects(setup(r,'save',p));assert.equal((await setup(r,'read')).draft,null);});
+test('assets are imported as unique copies, inbox can be discovered without vision',async t=>{const r=await fixture(t);const folder=await asset(r,'folder');const p=join(r,folder.path,'avatar.png');const bytes=Buffer.from([1,2,3,4]);await writeFile(p,bytes);const a=await asset(r,'import',p),b=await asset(r,'import',p);assert.notEqual(a.path,b.path);assert.deepEqual(await readFile(join(r,a.path)),bytes);assert.deepEqual(await readFile(p),bytes);const list=await asset(r,'list');assert.equal(list.files.length,3);assert.equal(list.files.filter(x=>x.imported).length,2);await setup(r,'save',{...complete(),documents:[...complete().documents,doc('visual-identity','Avatar brief',{assets:[a.path]})]});await setup(r,'approve');assert.equal((await new KnowledgeStore(r).list({type:'visual-identity'})).documents[0].assets[0],a.path);});
+test('missing referenced asset prevents approval; symlink asset directory refused', {skip:process.platform==='win32'},async t=>{const r=await fixture(t);await asset(r,'folder');const p=join(r,'avatar.png');await writeFile(p,'image');const a=await asset(r,'import',p);await rm(join(r,a.path));await setup(r,'save',{...complete(),documents:[...complete().documents,doc('visual-identity','Avatar',{assets:[a.path]})]});await assert.rejects(setup(r,'approve'));assert.equal((await setup(r,'read')).configuration,'pending');await rm(join(r,'.content/assets'),{recursive:true});await symlink(r,join(r,'.content/assets'),'dir');await assert.rejects(asset(r,'folder'),/Invalid asset directory/);});
+test('public CLI version, setup, list/search/read, save/archive/approve',async t=>{const r=await fixture(t,false);assert.equal(run(r,['--version']).stdout.trim(),'0.4.0');assert.equal(run(r,['check']).status,1);val(run(r,['init']));val(run(r,['setup','save'],complete()));assert.equal(val(run(r,['knowledge','list'])).total,0);val(run(r,['setup','approve']));assert.equal(val(run(r,['knowledge','search','--query','VOICE','--domain','profile'])).total,1);assert.equal(val(run(r,['knowledge','read','voice','identity'])).documents.length,2);const staged=val(run(r,['knowledge','save'],doc('rubric','test content')));const id=staged.draft.documents[0].id;val(run(r,['knowledge','approve']));val(run(r,['knowledge','archive',id]));assert.equal(run(r,['knowledge','approve']).status,2);val(run(r,['setup','save'],{confirm:[id]}));val(run(r,['knowledge','approve']));assert.equal(val(run(r,['knowledge','read',id,'--version-number','1'])).documents[0].meta.version,1);assert.equal(val(run(r,['knowledge','list','--type','rubric'])).total,0);val(run(r,['knowledge','reindex']));});
