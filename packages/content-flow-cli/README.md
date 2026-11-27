@@ -1,4 +1,4 @@
-# Content Flow CLI — development 0.4.0
+# Content Flow CLI — development 0.4.1
 
 Node.js >=22.20. TypeScript, no runtime dependencies. Private package; no registry release. Schema 2 replaces the monolithic schema 1 settings. Use a new workspace; old settings are rejected, never migrated or overwritten.
 
@@ -17,6 +17,7 @@ content-flow init --workspace /path/to/existing/project
 ```sh
 content-flow knowledge list --domain strategy
 content-flow knowledge search --query tutorial --type rubric
+content-flow knowledge list --type inspiration
 content-flow knowledge read voice
 content-flow knowledge read voice --version-number 1
 content-flow knowledge reindex

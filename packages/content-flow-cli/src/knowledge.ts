@@ -3,7 +3,7 @@ import { lstat, mkdir, readFile, readdir, mkdtemp, writeFile, link, rename, rm, 
 import { join, resolve } from 'node:path';
 
 type Json = Record<string, unknown>;
-const types = { profile: ['identity', 'audience', 'voice', 'scope', 'visual-identity', 'example'], strategy: ['objectives', 'cadence', 'rubric', 'platform'] } as const;
+const types = { profile: ['identity', 'audience', 'voice', 'scope', 'visual-identity', 'example', 'inspiration'], strategy: ['objectives', 'cadence', 'rubric', 'platform'] } as const;
 type Domain = keyof typeof types;
 type Status = 'experimental' | 'active' | 'archived';
 const singletons = new Set(['identity', 'audience', 'voice', 'scope', 'objectives', 'cadence']);

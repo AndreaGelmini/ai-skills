@@ -8,7 +8,7 @@ type FieldState = 'deferred' | 'declined';
 type Mark = { provenance: Provenance; fingerprint: string };
 type DraftState = { draft_id: string; technical: Json; fields: Record<string, FieldState>; marks: Record<string, Mark> };
 const required = ['identity','objectives','audience','voice','scope','platforms','memory_enabled','startup_status'] as const;
-const optional = ['rubrics','examples','visual','locale','cadence','tools','memory_support_threshold','memory_contrary_threshold'] as const;
+const optional = ['rubrics','examples','inspirations','visual','locale','cadence','tools','memory_support_threshold','memory_contrary_threshold'] as const;
 const thresholds = ['memory_support_threshold','memory_contrary_threshold'] as const;
 const defaults = { memory_support_threshold: 5, memory_contrary_threshold: 10 };
 const technicalKeys = ['memory_enabled','startup_status',...thresholds,'language','timezone','tools'] as const;
@@ -49,7 +49,7 @@ async function load(store: KnowledgeStore) {
 function coverage(docs: Meta[], tech: Json, notes: Record<string,FieldState>) {
   const active = docs.filter(d => d.status !== 'archived');
   const has = (type: string) => active.some(d => d.type === type);
-  const answered: Record<string, boolean> = { identity:has('identity'), objectives:has('objectives'), audience:has('audience'), voice:has('voice'), scope:has('scope'), platforms:has('platform'), memory_enabled:typeof tech.memory_enabled === 'boolean', startup_status:typeof tech.startup_status === 'boolean', rubrics:has('rubric'), examples:has('example'), visual:has('visual-identity'), locale: text(tech.language) && text(tech.timezone), cadence:has('cadence'), tools:text(tech.tools), memory_support_threshold:Object.hasOwn(tech,thresholds[0]), memory_contrary_threshold:Object.hasOwn(tech,thresholds[1]) };
+  const answered: Record<string, boolean> = { identity:has('identity'), objectives:has('objectives'), audience:has('audience'), voice:has('voice'), scope:has('scope'), platforms:has('platform'), memory_enabled:typeof tech.memory_enabled === 'boolean', startup_status:typeof tech.startup_status === 'boolean', rubrics:has('rubric'), examples:has('example'), inspirations:has('inspiration'), visual:has('visual-identity'), locale: text(tech.language) && text(tech.timezone), cadence:has('cadence'), tools:text(tech.tools), memory_support_threshold:Object.hasOwn(tech,thresholds[0]), memory_contrary_threshold:Object.hasOwn(tech,thresholds[1]) };
   const states: Record<string,string> = {};
   for (const k of [...required,...optional]) states[k] = (thresholds as readonly string[]).includes(k) && tech.memory_enabled !== true ? (tech.memory_enabled === false ? 'inapplicable' : 'blocked') : answered[k] ? 'answered' : notes[k] ?? 'unanswered';
   return { states, missing: required.filter(k => !answered[k]), blocked_optional: optional.filter(k => states[k] === 'blocked'), inapplicable_optional: optional.filter(k => states[k] === 'inapplicable'), unaddressed_optional: optional.filter(k => states[k] === 'unanswered') };

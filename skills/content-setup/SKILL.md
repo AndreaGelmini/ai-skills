@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Content Setup
 
-User invocation only. Check `content-flow --version` (0.4.x), run `content-flow init` then `content-flow setup read` in the project. If unavailable, request installation of the verified CLI; resolve structural errors first. Never overwrite a legacy workspace.
+User invocation only. Check `content-flow --version` (0.4.1 or later compatible 0.4.x), run `content-flow init` then `content-flow setup read` in the project. If unavailable, request installation of the verified CLI; resolve structural errors first. Never overwrite a legacy workspace.
 
 Resume the candidate, otherwise use approved metadata; for updates read only affected documents. Follow the [CLI contract](references/cli.md) for patches, provenance, asset handling and approval.
 
@@ -15,7 +15,7 @@ Load `interview-loop` by name if available. If absent or loading fails, notify t
 
 Use CLI field/dependency states for structural completeness and these references for semantic sufficiency:
 
-- [Editorial profile](references/editorial-profile.md): identity, intent, audience, voice, themes and creative identity.
+- [Editorial profile](references/editorial-profile.md): identity, intent, audience, voice, themes, authentic examples, communication inspirations and creative identity.
 - [Distribution](references/distribution.md): destinations, formats, language and cadence.
 - [Operations](references/operations.md): tools, memory and monitoring.
 

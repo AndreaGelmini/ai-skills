@@ -10,7 +10,7 @@ cd packages/content-flow-cli
 npm install
 npm test
 npm link
-content-flow --version  # 0.4.0
+content-flow --version  # 0.4.1
 ```
 
 If npm link fails due to an unwritable global prefix, use a user-owned prefix or a PATH wrapper for the verified local `dist/cli.js`; never install an unverified registry package. Build and install from the same checkout.
@@ -33,7 +33,7 @@ content-flow setup read --details
 content-flow knowledge list
 ```
 
-Expect one question per turn, including optional branches; summaries are proposals until confirmed. Unanswered is not declined. Check that the agent saves cross-domain information and resumes a partial candidate on restart. Memory thresholds depend on memory_enabled. With only `@content-setup` in an English environment, English is acceptable until the user's language is known.
+Expect one question per turn, including optional branches; summaries are proposals until confirmed. The setup should ask separately for authentic writing samples and external communication inspirations (creator/blog/profile and what appeals to the user). Both are optional. Confirm an inspiration and verify `content-flow knowledge list --type inspiration`; `knowledge list --type example` remains independent and the approved `voice` is not overwritten. Test deferral/decline and subsequent addition or archive. Unanswered is not declined. Check that the agent saves cross-domain information and resumes a partial candidate on restart. Memory thresholds depend on memory_enabled. With only `@content-setup` in an English environment, English is acceptable until the user's language is known.
 
 When asked about graphics, try the asset inbox option or explicitly authorize import of your local character sheet and brief. Confirm asset paths are relative and no vision claim is made by a text-only model. Before approval, check the candidate and explicitly confirm; active knowledge stays unchanged until promotion.
 
@@ -55,3 +55,7 @@ node skills/create-skill/scripts/validate-skill-links.mjs skills/content-setup s
 ```
 
 No migration, n8n, NotebookLM or paid calls required. Do not commit personal profiles, assets or credentials to the development repository.
+
+## 0.4.1 validation note
+
+The new optional inspiration document type and coverage logic were checked locally in isolation. Two integration regression tests were added to `tests/setup.test.mjs` (optional field states, independent documents/provenance/discovery/archive). The full package suite could not be rerun in the current environment because the full checkout was unavailable. Run `npm test` before the new real-agent trial; prior 0.4.0 test results are not a claim about 0.4.1.

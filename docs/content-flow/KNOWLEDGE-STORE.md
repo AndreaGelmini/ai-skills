@@ -1,6 +1,6 @@
 # Knowledge Store — implementation contract
 
-Accepted direction: [decision register](DECISIONS.md). Technical details in this contract are proposed implementation defaults, not new product commitments. This contract supersedes the older monolithic setup layout. CLI 0.4.0 implements schema 2 for setup and reusable profile/strategy documents. Memory promotion and idea/artifact consumers are later increments.
+Accepted direction: [decision register](DECISIONS.md). Technical details in this contract are proposed implementation defaults, not new product commitments. This contract supersedes the older monolithic setup layout. CLI 0.4.x implements schema 2 for setup and reusable profile/strategy documents. Memory promotion and idea/artifact consumers are later increments.
 
 ## Responsibility and boundaries
 
@@ -10,7 +10,7 @@ One document represents an independently useful and independently changeable uni
 
 | Domain | Types / granularity | Authority |
 |---|---|---|
-| profile | identity, audience, voice, scope, visual identity, writing examples (one coherent collection or an independently useful example) | User-approved description/preferences |
+| profile | identity, audience, voice, scope, visual identity, writing examples (one coherent collection or an independently useful example), external communication inspirations (independent references or coherent collection; not authored examples or automatic voice rules) | User-approved description/preferences |
 | strategy | objectives, general cadence, one rubric per recurring series, one platform/account per destination | User-approved choices, possibly experimental |
 | memory | one scoped learning/hypothesis per entity | Advisory, evidence-backed; never silently changes profile or strategy |
 
@@ -156,3 +156,7 @@ Generated frontmatter is a JSON object delimited by Markdown frontmatter markers
 Committed manifest ancestry defines historical revisions, so orphaned files from an interrupted commit are not approved history. Failed writes preserve previous selection and can consume orphaned version numbers. A filesystem writer lock rejects concurrent mutations; a lock left by process termination requires deliberate manual inspection/recovery. Discovery validates selected revision hashes and scans selected documents locally instead of relying on the derived index. Setup approval refreshes the index; explicit reindex repairs it. No automated reconciliation/purge, idea dependency graph, memory documents or evidence ingestion in this increment. General crash/power-loss durability, hostile concurrent filesystem mutation, Windows behavior and real-agent acceptance remain unverified.
 
 Validation of the reconstructed 0.4.0 source: 31/31 automatic tests passed on Linux / Node 22.16.0 with TypeScript 5.8.3 and local Node types, including non-root permission failures. Offline installation of the packed local CLI returned 0.4.0. Declared minimum Node version remains 22.20.0; the test runtime was below that declared minimum. Both changed skills passed local metadata and relative-link checks; repository validators and real OpenCode + Big Pickle setup remain separate acceptance work. See [testing](TESTING.md). New research/inspiration proposals are tracked separately in [backlog](BACKLOG.md), not implemented scope.
+
+### 0.4.1 extension
+
+`inspiration` is an optional profile document type, separate from `example` and `voice`. The `inspirations` setup field has normal unanswered/deferred/declined/answered states and independent IDs, provenance, discovery and archival. No schema migration: existing schema 2 profiles simply have an unanswered optional field until addressed. See the [CLI reference](../../skills/content-setup/references/cli.md) and [testing guide](TESTING.md).

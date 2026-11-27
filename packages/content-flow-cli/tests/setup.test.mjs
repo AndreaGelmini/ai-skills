@@ -33,4 +33,36 @@ test('archive requires confirmation and cannot remove required singleton or last
 test('invalid technical fields and provenance are rejected',async t=>{const r=await fixture(t);for(const p of [{technical:{memory_enabled:'true'}},{technical:{memory_support_threshold:0}},{technical:{credentials:'secret'}},{fields:{identity:'declined'}},{documents:[{...doc('voice'),provenance:'guessed'}]}])await assert.rejects(setup(r,'save',p));assert.equal((await setup(r,'read')).draft,null);});
 test('assets are imported as unique copies, inbox can be discovered without vision',async t=>{const r=await fixture(t);const folder=await asset(r,'folder');const p=join(r,folder.path,'avatar.png');const bytes=Buffer.from([1,2,3,4]);await writeFile(p,bytes);const a=await asset(r,'import',p),b=await asset(r,'import',p);assert.notEqual(a.path,b.path);assert.deepEqual(await readFile(join(r,a.path)),bytes);assert.deepEqual(await readFile(p),bytes);const list=await asset(r,'list');assert.equal(list.files.length,3);assert.equal(list.files.filter(x=>x.imported).length,2);await setup(r,'save',{...complete(),documents:[...complete().documents,doc('visual-identity','Avatar brief',{assets:[a.path]})]});await setup(r,'approve');assert.equal((await new KnowledgeStore(r).list({type:'visual-identity'})).documents[0].assets[0],a.path);});
 test('missing referenced asset prevents approval; symlink asset directory refused', {skip:process.platform==='win32'},async t=>{const r=await fixture(t);await asset(r,'folder');const p=join(r,'avatar.png');await writeFile(p,'image');const a=await asset(r,'import',p);await rm(join(r,a.path));await setup(r,'save',{...complete(),documents:[...complete().documents,doc('visual-identity','Avatar',{assets:[a.path]})]});await assert.rejects(setup(r,'approve'));assert.equal((await setup(r,'read')).configuration,'pending');await rm(join(r,'.content/assets'),{recursive:true});await symlink(r,join(r,'.content/assets'),'dir');await assert.rejects(asset(r,'folder'),/Invalid asset directory/);});
-test('public CLI version, setup, list/search/read, save/archive/approve',async t=>{const r=await fixture(t,false);assert.equal(run(r,['--version']).stdout.trim(),'0.4.0');assert.equal(run(r,['check']).status,1);val(run(r,['init']));val(run(r,['setup','save'],complete()));assert.equal(val(run(r,['knowledge','list'])).total,0);val(run(r,['setup','approve']));assert.equal(val(run(r,['knowledge','search','--query','VOICE','--domain','profile'])).total,1);assert.equal(val(run(r,['knowledge','read','voice','identity'])).documents.length,2);const staged=val(run(r,['knowledge','save'],doc('rubric','test content')));const id=staged.draft.documents[0].id;val(run(r,['knowledge','approve']));val(run(r,['knowledge','archive',id]));assert.equal(run(r,['knowledge','approve']).status,2);val(run(r,['setup','save'],{confirm:[id]}));val(run(r,['knowledge','approve']));assert.equal(val(run(r,['knowledge','read',id,'--version-number','1'])).documents[0].meta.version,1);assert.equal(val(run(r,['knowledge','list','--type','rubric'])).total,0);val(run(r,['knowledge','reindex']));});
+test('public CLI version, setup, list/search/read, save/archive/approve',async t=>{const r=await fixture(t,false);assert.equal(run(r,['--version']).stdout.trim(),'0.4.1');assert.equal(run(r,['check']).status,1);val(run(r,['init']));val(run(r,['setup','save'],complete()));assert.equal(val(run(r,['knowledge','list'])).total,0);val(run(r,['setup','approve']));assert.equal(val(run(r,['knowledge','search','--query','VOICE','--domain','profile'])).total,1);assert.equal(val(run(r,['knowledge','read','voice','identity'])).documents.length,2);const staged=val(run(r,['knowledge','save'],doc('rubric','test content')));const id=staged.draft.documents[0].id;val(run(r,['knowledge','approve']));val(run(r,['knowledge','archive',id]));assert.equal(run(r,['knowledge','approve']).status,2);val(run(r,['setup','save'],{confirm:[id]}));val(run(r,['knowledge','approve']));assert.equal(val(run(r,['knowledge','read',id,'--version-number','1'])).documents[0].meta.version,1);assert.equal(val(run(r,['knowledge','list','--type','rubric'])).total,0);val(run(r,['knowledge','reindex']));});
+
+test('communication inspirations are optional; unknown, deferred and declined stay distinct',async t=>{
+  const r=await fixture(t);let s=await setup(r,'read');
+  assert.equal(s.states.inspirations,'unanswered');assert.ok(s.unaddressed_optional.includes('inspirations'));assert.ok(!s.required.includes('inspirations'));
+  s=await setup(r,'save',{...complete(),fields:{inspirations:'deferred'}});
+  assert.equal(s.states.inspirations,'deferred');assert.equal(s.states.examples,'unanswered');
+  s=await setup(r,'approve');assert.equal(s.states.inspirations,'deferred');assert.deepEqual(s.missing,[]);
+  await setup(r,'save',{fields:{inspirations:'declined'}});
+  s=await setup(r,'approve');assert.equal(s.states.inspirations,'declined');assert.equal(s.states.examples,'unanswered');
+});
+test('inspirations have independent identity, provenance, discovery and lifecycle',async t=>{
+  const r=await fixture(t);await seed(r);const store=new KnowledgeStore(r);
+  const a=doc('inspiration','Admire clear explanations of failure',{title:'Creator A',provenance:'inferred',tags:['clarity']});
+  const b=doc('inspiration','Admire practical demonstrations',{title:'Creator B'});
+  let s=await setup(r,'save',{documents:[a,b,doc('example','Authentic author sample')]});
+  const ids=s.draft.documents.filter(d=>d.type==='inspiration').map(d=>d.id);
+  assert.equal(ids.length,2);assert.notEqual(ids[0],ids[1]);assert.equal(s.states.inspirations,'answered');
+  assert.equal(s.states.examples,'answered');assert.equal(s.unconfirmed.length,1);
+  assert.equal((await store.list({type:'inspiration'})).total,0);
+  await assert.rejects(setup(r,'approve'),/Unconfirmed documents/);
+  const inferred=s.unconfirmed[0];await setup(r,'save',{confirm:[inferred]});await setup(r,'approve');
+  assert.equal(val(run(r,['knowledge','list','--type','inspiration'])).total,2);
+  assert.equal(val(run(r,['knowledge','search','--type','inspiration','--query','failure'])).total,1);
+  assert.equal((await store.list({type:'example'})).total,1);
+  assert.equal((await store.readDocument('voice')).body.trim(),'voice body');
+  await setup(r,'save',{archive:[inferred]});await setup(r,'save',{confirm:[inferred]});await setup(r,'approve');
+  assert.equal((await store.list({type:'inspiration'})).total,1);
+  assert.equal((await store.readDocument(inferred,1)).meta.title,'Creator A');
+  const remaining=ids.find(id=>id!==inferred);
+  await setup(r,'save',{archive:[remaining]});await setup(r,'save',{confirm:[remaining]});s=await setup(r,'approve');
+  assert.equal(s.states.inspirations,'unanswered');assert.equal(s.states.examples,'answered');
+});
